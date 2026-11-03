@@ -1,0 +1,33 @@
+configs:
+  params:
+    server.insecure: true        # plain HTTP; UI reached only via port-forward
+
+dex:
+  enabled: false                 # no SSO for the demo; local admin user
+notifications:
+  enabled: false
+
+controller:
+  resources:
+    requests: {cpu: 250m, memory: 512Mi}
+    limits: {memory: 1Gi}
+  metrics: {enabled: true, serviceMonitor: {enabled: true}}
+server:
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 512Mi}
+  metrics: {enabled: true, serviceMonitor: {enabled: true}}
+repoServer:
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 512Mi}
+  metrics: {enabled: true, serviceMonitor: {enabled: true}}
+applicationSet:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
+    limits: {memory: 256Mi}
+  metrics: {enabled: true, serviceMonitor: {enabled: true}}
+redis:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
+    limits: {memory: 256Mi}

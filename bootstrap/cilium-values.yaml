@@ -1,0 +1,55 @@
+cluster:
+  name: devsecops-demo
+# Datapath: AWS ENI mode (pods get real VPC IPs)
+eni:
+  enabled: true
+ipam:
+  mode: eni
+routingMode: native
+enableIPv4Masquerade: false # pods keep VPC IPs; NAT gateway handles internet egress
+# Replace kube-proxy with eBPF
+kubeProxyReplacement: true
+k8sServiceHost: 68819C5B9FA01C1E5E4754B88C166965.gr7.us-east-2.eks.amazonaws.com
+k8sServicePort: 443
+# Gateway API, used by Argo Rollouts for weighted canary traffic
+gatewayAPI:
+  enabled: true
+operator:
+  replicas: 2
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  dashboards:
+    enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+# Hubble: flows, UI, Prometheus metrics
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+  metrics:
+    enableOpenMetrics: true
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction"
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+dashboards:
+  enabled: true
+envoy:
+  prometheus:
+    serviceMonitor:
+      enabled: true

@@ -1,0 +1,10 @@
+admissionController:
+  serviceMonitor: {enabled: true}
+backgroundController:
+  serviceMonitor: {enabled: true}
+reportsController:
+  serviceMonitor: {enabled: true}
+cleanupController:
+  enabled: false          # we don't use cleanup policies; saves a pod
+grafana:
+  enabled: true           # dashboard ConfigMap, auto-loaded by Grafana

@@ -1,0 +1,26 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: devsecops-demo
+  region: us-east-2
+  version: "1.35"
+  tags:
+    project: devsecops-demo
+
+availabilityZones: ["us-east-2a", "us-east-2b", "us-east-2c"]
+
+iam:
+  withOIDC: false             # org SCP blocks IAM OIDC providers; using Pod Identity instead
+
+vpc:
+  nat:
+    gateway: Single
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+
+addonsConfig:
+  disableDefaultAddons: true
+addons:
+  - name: coredns
+  - name: eks-pod-identity-agent

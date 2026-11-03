@@ -1,0 +1,40 @@
+fullnameOverride: kps          # predictable names: kps-prometheus, kps-grafana
+
+alertmanager:
+  enabled: false
+
+# EKS: no kube-proxy (Cilium replaced it); control plane is AWS-managed
+kubeProxy:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    # Pick up ServiceMonitors/PodMonitors/rules from all namespaces, no "release" label needed
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    retention: 2d
+    retentionSize: 4GB
+    resources:
+      requests: {cpu: 200m, memory: 1Gi}
+      limits: {memory: 2Gi}
+
+grafana:
+  admin:
+    existingSecret: grafana-admin
+  persistence:
+    enabled: false
+  resources:
+    requests: {cpu: 50m, memory: 256Mi}
+    limits: {memory: 512Mi}
+  sidecar:
+    dashboards:
+      searchNamespace: ALL       # load Cilium/Hubble dashboards from kube-system

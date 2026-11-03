@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: demo-dev
+resources:
+  - ../base
+images:
+  - name: 318153086031.dkr.ecr.us-east-2.amazonaws.com/demo-app
+    newTag: r2.1-15f739c

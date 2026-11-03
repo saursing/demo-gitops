@@ -1,0 +1,84 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: restrict-image-registry
+spec:
+  validationActions: [Audit]
+  matchConstraints:
+    namespaceSelector:
+      matchLabels: {devsecops-demo/policies: enabled}
+    resourceRules:
+      - {apiGroups: [""], apiVersions: [v1], operations: [CREATE, UPDATE], resources: [pods]}
+  variables:
+    - name: allContainers
+      expression: "object.spec.containers + object.spec.?initContainers.orValue([])"
+  validations:
+    - expression: "variables.allContainers.all(c, c.image.startsWith('318153086031.dkr.ecr.us-east-2.amazonaws.com/'))"
+      message: "Images must come from 318153086031.dkr.ecr.us-east-2.amazonaws.com"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  validationActions: [Audit]
+  matchConstraints:
+    namespaceSelector:
+      matchLabels: {devsecops-demo/policies: enabled}
+    resourceRules:
+      - {apiGroups: [""], apiVersions: [v1], operations: [CREATE, UPDATE], resources: [pods]}
+  variables:
+    - name: allContainers
+      expression: "object.spec.containers + object.spec.?initContainers.orValue([])"
+  validations:
+    # ECR hostnames have no port, so a ':' means a tag is present
+    - expression: "variables.allContainers.all(c, c.image.contains('@sha256:') || (c.image.contains(':') && !c.image.endsWith(':latest')))"
+      message: "Use an explicit image tag or digest (no :latest, no untagged images)"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-resources
+spec:
+  validationActions: [Audit]
+  matchConstraints:
+    namespaceSelector:
+      matchLabels: {devsecops-demo/policies: enabled}
+    resourceRules:
+      - {apiGroups: [""], apiVersions: [v1], operations: [CREATE, UPDATE], resources: [pods]}
+  variables:
+    - name: allContainers
+      expression: "object.spec.containers + object.spec.?initContainers.orValue([])"
+  validations:
+    - expression: >-
+        variables.allContainers.all(c,
+          c.?resources.?requests.?cpu.hasValue() &&
+          c.?resources.?requests.?memory.hasValue() &&
+          c.?resources.?limits.?memory.hasValue())
+      message: "Every container needs cpu+memory requests and a memory limit"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: pod-security-hardened
+spec:
+  validationActions: [Audit]
+  matchConstraints:
+    namespaceSelector:
+      matchLabels: {devsecops-demo/policies: enabled}
+    resourceRules:
+      - {apiGroups: [""], apiVersions: [v1], operations: [CREATE, UPDATE], resources: [pods]}
+  variables:
+    - name: allContainers
+      expression: "object.spec.containers + object.spec.?initContainers.orValue([])"
+  validations:
+    - expression: "variables.allContainers.all(c, c.?securityContext.?privileged.orValue(false) == false)"
+      message: "Privileged containers are not allowed"
+    - expression: "variables.allContainers.all(c, c.?securityContext.?allowPrivilegeEscalation.orValue(true) == false)"
+      message: "Set securityContext.allowPrivilegeEscalation: false"
+    - expression: >-
+        object.spec.?securityContext.?runAsNonRoot.orValue(false) == true ||
+        variables.allContainers.all(c, c.?securityContext.?runAsNonRoot.orValue(false) == true)
+      message: "Set runAsNonRoot: true (pod or every container)"
+    - expression: "variables.allContainers.all(c, 'ALL' in c.?securityContext.?capabilities.?drop.orValue([]))"
+      message: "Drop ALL capabilities (securityContext.capabilities.drop: [ALL])"

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-dev
+  labels:
+    devsecops-demo/policies: enabled
+    devsecops-demo/env: dev
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-stg
+  labels:
+    devsecops-demo/policies: enabled
+    devsecops-demo/env: stg
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-prod
+  labels:
+    devsecops-demo/policies: enabled
+    devsecops-demo/env: prod
+---
