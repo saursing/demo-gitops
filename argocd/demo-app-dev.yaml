@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-app-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/saursing/demo-gitops.git
+    targetRevision: main          # the branch to watch
+    path: apps/demo-app/dev       # the folder to watch
+  destination:
+    server: https://kubernetes.default.svc   # this same cluster
+    namespace: demo-dev
+  syncPolicy:
+    automated:
+      prune: true                 # delete things that are removed from git
+      selfHeal: true              # undo manual changes made with kubectl
